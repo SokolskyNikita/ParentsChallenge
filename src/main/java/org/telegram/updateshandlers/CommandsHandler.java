@@ -3,7 +3,9 @@ package org.telegram.updateshandlers;
 import org.telegram.BotConfig;
 import org.telegram.commands.HelloCommand;
 import org.telegram.commands.HelpCommand;
+import org.telegram.commands.RegisterCommand;
 import org.telegram.commands.StartCommand;
+import org.telegram.commands.StartGameCommand;
 import org.telegram.commands.StopCommand;
 import org.telegram.commands.GetPointsCommand;
 import org.telegram.database.DatabaseManager;
@@ -31,7 +33,10 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         register(new HelloCommand());
         register(new StartCommand());
         register(new StopCommand());
+        register(new RegisterCommand());
+        register(new StartGameCommand());
         register(new GetPointsCommand());
+
         HelpCommand helpCommand = new HelpCommand(this);
         register(helpCommand);
 
