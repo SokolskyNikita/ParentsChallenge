@@ -1,6 +1,6 @@
 package org.telegram.commands;
 
-import org.telegram.database.DatabaseManager;
+import org.telegram.localdatabase.LocalDatabaseManager;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Chat;
 import org.telegram.telegrambots.api.objects.User;
@@ -14,24 +14,28 @@ import org.telegram.telegrambots.logging.BotLogger;
  *
  * @author Timo Schulz (Mit0x2)
  */
-public class StartCommand extends BotCommand {
+public class GetPointsCommand extends BotCommand {
 
-    public static final String LOGTAG = "STARTCOMMAND";
+    public static final String LOGTAG = "GETPOINTSCOMMAND";
 
-    public StartCommand() {
-        super("start", "With this command you can start the Bot");
+    public GetPointsCommand() {
+        super("get_points", "With this command you can see your achieved score");
     }
+    
 
     @Override
     public void execute(AbsSender absSender, User user, Chat chat, String[] strings) {
         
+        LocalDatabaseManager localDatabase =  LocalDatabaseManager.getInstance();
+        
+        int userScore;
+        userScore = localDatabase.checkPoints(user.getUserName()); 
+        
         StringBuilder messageBuilder = new StringBuilder();
 
-        String userName = user.getFirstName() + " " + user.getLastName();
+            messageBuilder.append("Your score is ");
+            messageBuilder.append(userScore);
 
-            messageBuilder.append("Hi ").append(userName).append("\n");
-            messageBuilder.append("i think we know each other already!");
-        
         SendMessage answer = new SendMessage();
         answer.setChatId(chat.getId().toString());
         answer.setText(messageBuilder.toString());

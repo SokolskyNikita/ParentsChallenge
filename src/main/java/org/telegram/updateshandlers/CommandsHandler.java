@@ -5,6 +5,7 @@ import org.telegram.commands.HelloCommand;
 import org.telegram.commands.HelpCommand;
 import org.telegram.commands.StartCommand;
 import org.telegram.commands.StopCommand;
+import org.telegram.commands.GetPointsCommand;
 import org.telegram.database.DatabaseManager;
 import org.telegram.services.Emoji;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -30,6 +31,7 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         register(new HelloCommand());
         register(new StartCommand());
         register(new StopCommand());
+        register(new GetPointsCommand());
         HelpCommand helpCommand = new HelpCommand(this);
         register(helpCommand);
 
