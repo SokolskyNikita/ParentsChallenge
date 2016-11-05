@@ -37,35 +37,38 @@ public class StartGameCommand extends BotCommand {
         SendGame sendGame = new SendGame();
         sendGame.setChatId(chat.getId().toString());
         sendGame.setGameShortName("mathbattle");
-        
+        SendMessage answer = new SendMessage();
 
         if (!databseManager.checkIfUserExists(user.getUserName())) {
             messageBuilder.append("You are not registered! Please register first!");
-        } else if (databseManager.checkPoints(user.getUserName()) > 0) {
+        } else if (databseManager.checkPoints(user.getUserName()) <= 0) {
             messageBuilder.append("You don't have enough money! Please top up your account!");
         } else if (strings.length == 0) {
             int currentMoney = databseManager.checkPoints(user.getUserName());
             messageBuilder.append("You have " + currentMoney + " credits. Please run the command with the amount you want to use.");
+        } else if (strings.length > 0) {
+            messageBuilder.append("Starting game...");
+            databseManager.addPoints(user.getUserName(), - Integer.parseInt(strings[0]));
+            InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> keyboard = new ArrayList();
+            List<InlineKeyboardButton> firstRow = new ArrayList();
+            InlineKeyboardButton gameButton = new InlineKeyboardButton();
+            gameButton.setText("Forward this challenge to your friend!");
+            gameButton.setSwitchInlineQuery("MathChallenge");
+            firstRow.add(gameButton);
+            keyboard.add(firstRow);
+            replyMarkup.setKeyboard(keyboard);
+            answer.setReplyMarkup(replyMarkup);
         }
 
-        SendMessage answer = new SendMessage();
         answer.setChatId(chat.getId().toString());
         answer.setText(messageBuilder.toString() + ".");
-        
-        InlineKeyboardMarkup replyMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList();
-        List<InlineKeyboardButton> firstRow = new ArrayList();
-        InlineKeyboardButton gameButton = new InlineKeyboardButton();
-        gameButton.setText("Math Challenge");
-        gameButton.setSwitchInlineQuery("MathChallenge");
-        firstRow.add(gameButton);
-        keyboard.add(firstRow);
-        replyMarkup.setKeyboard(keyboard);
-        answer.setReplyMarkup(replyMarkup);        
-        
+
         try {
             absSender.sendMessage(answer);
-            absSender.sendGame(sendGame);
+            if (strings.length > 0) {
+                absSender.sendGame(sendGame);
+            }
         } catch (TelegramApiException e) {
             BotLogger.error(LOGTAG, e);
         }

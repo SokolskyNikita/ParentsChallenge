@@ -1,6 +1,9 @@
 package org.telegram.updateshandlers;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.telegram.BotConfig;
+import org.telegram.commands.AddPointsCommand;
 import org.telegram.commands.HelloCommand;
 import org.telegram.commands.HelpCommand;
 import org.telegram.commands.RegisterCommand;
@@ -8,12 +11,19 @@ import org.telegram.commands.StartCommand;
 import org.telegram.commands.StartGameCommand;
 import org.telegram.commands.StopCommand;
 import org.telegram.commands.GetPointsCommand;
+import org.telegram.commands.SpendPointsCommand;
 import org.telegram.database.DatabaseManager;
 import org.telegram.services.Emoji;
+import org.telegram.services.RaeService;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
+import org.telegram.telegrambots.api.objects.inlinequery.InlineQuery;
+import org.telegram.telegrambots.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
+import org.telegram.telegrambots.api.objects.inlinequery.result.InlineQueryResult;
+import org.telegram.telegrambots.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.bots.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.logging.BotLogger;
@@ -37,6 +47,8 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
         register(new RegisterCommand());
         register(new StartGameCommand());
         register(new GetPointsCommand());
+        register(new AddPointsCommand());
+        register(new SpendPointsCommand());
 
         HelpCommand helpCommand = new HelpCommand(this);
         register(helpCommand);
@@ -96,5 +108,39 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
     @Override
     public String getBotToken() {
         return BotConfig.COMMANDS_TOKEN;
+    }
+    
+    private static AnswerInlineQuery converteResultsToResponse(InlineQuery inlineQuery, List<RaeService.RaeResult> results) {
+        AnswerInlineQuery answerInlineQuery = new AnswerInlineQuery();
+        answerInlineQuery.setInlineQueryId(inlineQuery.getId());
+        answerInlineQuery.setCacheTime(86400);
+        answerInlineQuery.setResults(convertRaeResults(results));
+        return answerInlineQuery;
+    }
+
+    /**
+     * Converts results from RaeService to a list of InlineQueryResultArticles
+     * @param raeResults Results from rae service
+     * @return List of InlineQueryResult
+     */
+    private static List<InlineQueryResult> convertRaeResults(List<RaeService.RaeResult> raeResults) {
+        List<InlineQueryResult> results = new ArrayList<>();
+
+        for (int i = 0; i < raeResults.size(); i++) {
+            RaeService.RaeResult raeResult = raeResults.get(i);
+            InputTextMessageContent messageContent = new InputTextMessageContent();
+            messageContent.disableWebPagePreview();
+            messageContent.enableMarkdown(true);
+            messageContent.setMessageText(raeResult.getDefinition());
+            InlineQueryResultArticle article = new InlineQueryResultArticle();
+            article.setInputMessageContent(messageContent);
+            article.setId(Integer.toString(i));
+            article.setTitle(raeResult.getTitle());
+            article.setDescription(raeResult.getDescription());
+            article.setThumbUrl("");
+            results.add(article);
+        }
+
+        return results;
     }
 }
