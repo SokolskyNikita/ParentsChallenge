@@ -10,6 +10,7 @@ import org.telegram.commands.StopCommand;
 import org.telegram.commands.GetPointsCommand;
 import org.telegram.database.DatabaseManager;
 import org.telegram.services.Emoji;
+import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
@@ -55,13 +56,23 @@ public class CommandsHandler extends TelegramLongPollingCommandBot {
 
     @Override
     public void processNonCommandUpdate(Update update) {
+        
+        if (update.hasCallbackQuery()) {
+            System.out.println(update.getCallbackQuery().getData());
+
+            AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+            answerCallbackQuery.setUrl("https://tbot.xyz/math/");
+            answerCallbackQuery.setCallbackQueryId(update.getCallbackQuery().getId());
+            answerCallbackQuery.setShowAlert(false);
+            try {
+                answerCallbackQuery(answerCallbackQuery);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
 
         if (update.hasMessage()) {
-            Message message = update.getMessage();
-
-            if (!DatabaseManager.getInstance().getUserStateForCommandsBot(message.getFrom().getId())) {
-                return;
-            }
+            Message message = update.getMessage();  
 
             if (message.hasText()) {
                 SendMessage echoMessage = new SendMessage();
